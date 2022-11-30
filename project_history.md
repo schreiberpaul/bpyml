@@ -37,8 +37,16 @@
 
 ```
 -> takes about 2.66s to build
-
+<br><br>
 ___
 
 ## Step 2 - write module for tf-model import
 --> see [bpy_model.py](bpy_model.py)
+<br><br>
+___
+
+## Related work
+[Blender Neural Network from barckley75](https://github.com/barckley75/Blender_Neural_Network)
+- uses the addon "Animation Nodes"
+- configure layer parameters like shape, hidden layers, etc.. from scratch -> no model import
+- it´s mostly control-panel based -> not very flexible

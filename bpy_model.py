@@ -1,39 +1,62 @@
 import tensorflow as tf
+import pprint as pp
+from bpy_layers import *
 
 class bpy_model():
-    def __init__(self) -> None:
+    def __init__(self, model: tf.keras.Model) -> object:
         self.name = ''
         self.layers = []
+        self.model = model
+
+        self.build()
     
-    def load(self, path) -> None:
+    @classmethod
+    def from_file(cls, path: str):
         try:
             m = tf.keras.models.load_model(path)
         except Exception as e:
             print(e)
             exit()
+
+        return cls(m)
+    
+    def build(self) -> None:
         
-        config = m.get_config()
+        config = self.model.get_config()
+        self.name = config['name']
+
         for layer in config['layers']:
-            dict = {'type' : layer['class_name']}
+        
+            match layer['class_name']:
+                case 'InputLayer':
+                    self.layers.append(bpy_InputLayer(layer))
+                
+                case 'Normalization':
+                    self.layers.append(bpy_Normalization(layer))
 
-            if 'activation' in layer['config']:
-                dict.update({'activation' : layer['config']['activation']}) 
+                case 'Dense':
+                    self.layers.append(bpy_Dense(layer))
 
-            if 'units' in layer['config']:
-                dict.update({'neurons' : layer['config']['units']})
-          
-            if 'batch_input_shape' in layer['config']:
-                dict.update({'input_shape' : layer['config']['batch_input_shape']})
-         
-            self.layers.append(dict)
+                case 'Conv2D':
+                    self.layers.append(bpy_Conv2D(layer))
+                
+                case 'MaxPooling2D':
+                    self.layers.append(bpy_MaxPooling2D(layer))
+                
+                case 'Flatten':
+                    self.layers.append(bpy_Flatten(layer))
+                
+                case _:
+                    raise NotImplementedError
 
+    
 if __name__ == '__main__':
-    path = 'ps2_model.h5'
+    # path = 'test_models/ps2_model.h5'
+    path = 'test_models/convolution_simpel'
 
-    model = bpy_model()
-    model.load(path=path)
+    model = bpy_model.from_file(path)
 
+    i=0
     for layer in model.layers:
-        print('')
-        for key, value in layer.items():
-            print(f'{key}: {value}')
+        layer.show(offset=i)
+        i += 10
